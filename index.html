@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Primeiro Mapa - Barretos</title>
+    <style>
+        /* Deixando o layout limpo: barra lateral e mapa lado a lado */
+        body { font-family: Arial, sans-serif; margin: 0; display: flex; height: 100vh; }
+        #sidebar { width: 300px; padding: 20px; background: #f4f4f4; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
+        #map { flex-grow: 1; height: 100%; }
+        h3 { margin-top: 0; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #1a73e8; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        button:hover { background: #1557b0; }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <h3>Painel de Controle</h3>
+        <div class="form-group">
+            <label for="localName">Nome do Local:</label>
+            <input type="text" id="localName" placeholder="Ex: Praça Central">
+        </div>
+        <div class="form-group">
+            <label for="localAddress">Endereço em Barretos:</label>
+            <input type="text" id="localAddress" placeholder="Ex: Rua 20, Barretos - SP">
+        </div>
+        <button id="addPoint">Adicionar ao Mapa</button>
+    </div>
+
+    <div id="map"></div>
+
+    <!-- Script da API do Google Maps -->
+    <script>
+        let map;
+
+        function initMap() {
+            // Coordenadas centrais de Barretos, SP
+            const barretos = { lat: -20.5588, lng: -48.5694 };
+
+            // Inicializa o mapa centralizado em Barretos
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 14,
+                center: barretos,
+            });
+
+            // Exemplo de marcador inicial fixo
+            new google.maps.Marker({
+                position: barretos,
+                map: map,
+                title: "Centro de Barretos",
+            });
+        }
+    </script>
+
+    <!-- Carrega a API do Google de forma assíncrona -->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=SUA_CHAVE_DE_API_AQUI&callback=initMap">
+    </script>
+</body>
+</html>
