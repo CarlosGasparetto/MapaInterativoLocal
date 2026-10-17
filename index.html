@@ -1,65 +1,78 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Primeiro Mapa - Barretos</title>
-    <style>
-        /* Deixando o layout limpo: barra lateral e mapa lado a lado */
-        body { font-family: Arial, sans-serif; margin: 0; display: flex; height: 100vh; }
-        #sidebar { width: 300px; padding: 20px; background: #f4f4f4; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
-        #map { flex-grow: 1; height: 100%; }
-        h3 { margin-top: 0; color: #333; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input { width: 100%; padding: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #1a73e8; color: white; border: none; cursor: pointer; border-radius: 4px; }
-        button:hover { background: #1557b0; }
-    </style>
-</head>
-<body>
-
-    <div id="sidebar">
-        <h3>Painel de Controle</h3>
-        <div class="form-group">
-            <label for="localName">Nome do Local:</label>
-            <input type="text" id="localName" placeholder="Ex: Praça Central">
-        </div>
-        <div class="form-group">
-            <label for="localAddress">Endereço em Barretos:</label>
-            <input type="text" id="localAddress" placeholder="Ex: Rua 20, Barretos - SP">
-        </div>
-        <button id="addPoint">Adicionar ao Mapa</button>
-    </div>
-
-    <div id="map"></div>
-
-    <!-- Script da API do Google Maps -->
-    <script>
+<script>
         let map;
+        let geocoder;
 
         function initMap() {
             // Coordenadas centrais de Barretos, SP
             const barretos = { lat: -20.5588, lng: -48.5694 };
 
-            // Inicializa o mapa centralizado em Barretos
+            // Inicializa o mapa
             map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 14,
                 center: barretos,
             });
 
-            // Exemplo de marcador inicial fixo
+            // Inicializa o serviço de Geocoding (conversor de endereço)
+            geocoder = new google.maps.Geocoder();
+
+            // Marcador inicial fixo no centro
             new google.maps.Marker({
                 position: barretos,
                 map: map,
                 title: "Centro de Barretos",
             });
+
+            // Evento de clique no botão "Adicionar ao Mapa"
+            document.getElementById("addPoint").addEventListener("click", function() {
+                const name = document.getElementById("localName").value;
+                const address = document.getElementById("localAddress").value;
+
+                if (!address) {
+                    alert("Por favor, digite um endereço!");
+                    return;
+                }
+
+                geocodeAddress(geocoder, map, name, address);
+            });
+        }
+
+        // Função que converte o endereço digitado em coordenadas geográficas
+        function geocodeAddress(geocoder, resultsMap, name, address) {
+            // Adiciona "Barretos - SP" para garantir precisão na busca local
+            const fullAddress = address + ", Barretos - SP";
+
+            geocoder.geocode({ address: fullAddress }, (results, status) => {
+                if (status === "OK") {
+                    // Centraliza o mapa no endereço encontrado
+                    resultsMap.setCenter(results[0].geometry.location);
+                    resultsMap.setZoom(16);
+
+                    // Cria um novo marcador no mapa
+                    const marker = new google.maps.Marker({
+                        map: resultsMap,
+                        position: results[0].geometry.location,
+                        title: name || address,
+                    });
+
+                    // Cria um balão de informação (InfoWindo) com o nome do local
+                    const infowindow = new google.maps.InfoWindow({
+                        content: `<div><strong>${name || "Local"}</strong><br>${address}</div>`
+                    });
+
+                    marker.addListener("click", () => {
+                        infowindow.open(resultsMap, marker);
+                    });
+
+                    // Abre o balão automaticamente ao adicionar
+                    infowindow.open(resultsMap, marker);
+
+                    // Limpa os campos após adicionar
+                    document.getElementById("localName").value = "";
+                    document.getElementById("localAddress").value = "";
+
+                } else {
+                    alert("Não foi possível encontrar o endereço. Tente especificar melhor (ex: Rua 20, 1000). Status do erro: " + status);
+                }
+            });
         }
     </script>
-
-    <!-- Carrega a API do Google de forma assíncrona -->
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDO-cxO93Tv2fK-OadJHQL66ZC9Ai8n0lo&callback=initMap">
-    </script>
-</body>
-</html>
